@@ -41,21 +41,66 @@ namespace RunLengthEncodingCSharp
         static void Main(string[] args)
         {
             var text = Console.ReadLine();
-            StringBuilder number = new StringBuilder();
+            var encodedStr = Encode(text);
+            Console.WriteLine(encodedStr);
 
-            int sum = 0;
+            var decodedStr = Decode(text, out int sum);
+            Console.WriteLine(sum);
+            Console.WriteLine(decodedStr);
+        }
+
+        public static StringBuilder Encode(String text)
+        {
+            StringBuilder encodedStr = new StringBuilder();
+
+            int count = 0;
+
+            char currentSybmol = text[0];
+
+            foreach (char symbol in text)
+            {
+                if (symbol == currentSybmol)
+                    count++;
+                else
+                {
+                    AddSymbols(ref encodedStr, currentSybmol, count);
+                    currentSybmol = symbol;
+                    count = 1;
+                }
+            }
+
+            AddSymbols(ref encodedStr, currentSybmol, count);
+
+            return encodedStr;
+        }
+
+        private static void AddSymbols(ref StringBuilder encodedStr, char currentSybmol, int count)
+        {
+            encodedStr.Append(currentSybmol);
+            if (count > 1)
+                encodedStr.Append(count);
+        }
+
+        public static StringBuilder Decode(String text, out int sum)
+        {
+            StringBuilder decodedStr = new StringBuilder();
+            StringBuilder number = new StringBuilder();
+            sum = 0;
             bool isPrevSymbolInt = false;
+            char previousLetter = ' ';
 
             foreach (char symbol in text)
             {
                 if (char.IsUpper(symbol))
                 {
-                    sum++;
                     if (isPrevSymbolInt)
                     {
-                        AddCount(ref sum, ref number);
+                        AddSymbols(ref sum, ref number, previousLetter, ref decodedStr);
                     }
+                    sum++;
+                    decodedStr.Append(symbol);
                     isPrevSymbolInt = false;
+                    previousLetter = symbol;
                 }
                 else
                 {
@@ -69,16 +114,18 @@ namespace RunLengthEncodingCSharp
 
             if (isPrevSymbolInt)
             {
-                AddCount(ref sum, ref number);
+                AddSymbols(ref sum, ref number, previousLetter, ref decodedStr);
             }
 
-            Console.WriteLine(sum);
+            return decodedStr;
         }
 
-        private static void AddCount(ref int sum, ref StringBuilder number)
+        private static void AddSymbols(ref int sum, ref StringBuilder number, char symbol, ref StringBuilder decodedStr)
         {
-            sum += int.Parse(number.ToString());
-            sum -= 1;
+            int addend = int.Parse(number.ToString()) - 1;
+            sum += addend;
+            for (int i = 0; i < addend; i++)
+                decodedStr.Append(symbol);
             number.Clear();
         }
     }
